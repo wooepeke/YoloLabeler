@@ -3,7 +3,7 @@ import json
 import os
 
 # Configuration
-OUTPUT_FOLDER = 'Datasets/Stag/labels'  # Folder where the JSON is saved
+OUTPUT_FOLDER = 'Datasets/Stag/labels'  # Folder where the JSON is saved --> Rename this 
 CLASS_LABEL = 0  # Default class label for annotations
 json_filepath = os.path.join(OUTPUT_FOLDER, 'labeled_regions.json')  # Update this with the appropriate JSON filename
 

@@ -37,11 +37,6 @@ The file structure for your project should look like this. Make sure to change y
 ```
 
 
-## License
-
-[MIT](https://choosealicense.com/licenses/mit/)
-
-
 ## Deployment
 
 To deploy this project run the following commands.
@@ -71,3 +66,8 @@ Instructions:
 - Create a better way to label parts of an image instead of having one possible label per image
 - Create a better way to name labels in images
 - Add yolo support and test on Linux Ubuntu 22.04/24.04
+- Add nice GUI for using the program
+## License
+
+[MIT](https://choosealicense.com/licenses/mit/)
+
