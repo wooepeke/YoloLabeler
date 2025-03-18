@@ -63,7 +63,6 @@ class FileExplorer(QWidget):
         self.json_display.setText("Select an json file")
         self.json_display.setStyleSheet("border: 1px solid #cccccc;")
 
-
         # Annotation information display
         self.info_display = QLabel(self)
         self.info_display.setText("No annotations")
@@ -79,10 +78,6 @@ class FileExplorer(QWidget):
         self.clear_button = QPushButton("Clear All", self)
         self.clear_button.clicked.connect(self.clear_annotations)
         btn_layout.addWidget(self.clear_button)
-        
-        self.save_button = QPushButton("Save", self)
-        self.save_button.clicked.connect(self.save_annotations)
-        btn_layout.addWidget(self.save_button)
 
         self.export_button = QPushButton("Export Coordinates", self)
         self.export_button.clicked.connect(self.export_coordinates)
@@ -401,6 +396,13 @@ class FileExplorer(QWidget):
 
             self.status_label.setText(f"Annotations exported to {os.path.basename(json_path)}")
 
+            annotated_folder = os.path.join(self.parent_folder, "annotated_images")
+            if not os.path.exists(annotated_folder):
+                os.makedirs(annotated_folder)
+            annotated_path = os.path.join(annotated_folder, os.path.basename(self.image_path))
+            self.image_display.pixmap().save(annotated_path)
+            print(f"Annotated image saved at: {annotated_path}")
+
         except Exception as e:
             QMessageBox.warning(self, "Export Error", f"Failed to export annotations: {str(e)}")
 
@@ -409,6 +411,9 @@ class FileExplorer(QWidget):
         self.image_path = file_path  # Store file path for saving annotated image
         self.image_folder = os.path.dirname(file_path)  # Store the image folder
         self.parent_folder = os.path.dirname(self.image_folder)  # Get one level above image folder
+
+        if "annotated_images" in file_path:
+            self.export_button.setDisabled(True)
         
         if self.current_image.isNull():
             self.image_display.setText("Failed to load image.")
@@ -424,16 +429,19 @@ class FileExplorer(QWidget):
             # # Set json
             label_folder = os.path.join(self.parent_folder, "labels")
             files_and_dirs = os.listdir(label_folder)
-
-            for file in files_and_dirs:
-                if file.endswith(".json"):
-                    json_path = os.path.join(label_folder, file)
-
-            self.display_json(json_path)
+            
+            filename = os.path.splitext(os.path.basename(file_path))[0] + ".json"
+            
+            try:
+                json_path = os.path.join(label_folder, filename)
+                self.display_json(json_path)
+            except:
+                print("No File found")
 
     def display_json(self, json_path):
         """Display the content of a JSON file"""
         try:
+            print(json_path)
             with open(json_path, 'r') as json_file:
                 data = json.load(json_file)
             
@@ -454,9 +462,13 @@ class FileExplorer(QWidget):
                 word-wrap: break-word;
             """)
         except Exception as e:
-            QMessageBox.warning(self, "Error", f"Failed to read JSON file: {str(e)}")   
-
+            # QMessageBox.warning(self, "Error", f"Failed to read JSON file: {str(e)}")   
+            self.json_display.setText(f"No Json File Found")
+            
     def mousePressEvent(self, event):
+        if "annotated_images" in self.current_file_path:
+            return
+
         if self.current_image and event.button() == Qt.LeftButton:
             self.drawing = True
             local_pos = (event.pos() - self.image_display.pos())
@@ -466,6 +478,9 @@ class FileExplorer(QWidget):
             self.start_point = self.convert_to_original_image_coords(local_pos)
 
     def mouseMoveEvent(self, event):
+        if "annotated_images" in self.current_file_path:
+            return
+
         if self.drawing and self.current_image:
             local_pos = event.pos() - self.image_display.pos()
             if not self.is_inside_image(local_pos):
@@ -474,6 +489,9 @@ class FileExplorer(QWidget):
             self.update_image_display()
 
     def mouseReleaseEvent(self, event):
+        if "annotated_images" in self.current_file_path:
+            return
+
         if self.drawing and self.current_image:
             local_pos = event.pos() - self.image_display.pos()
             if not self.is_inside_image(local_pos):
@@ -555,14 +573,6 @@ class FileExplorer(QWidget):
         if self.rectangles:
             self.rectangles.pop()
             self.update_image_display()
-
-    def save_annotations(self):
-        annotated_folder = os.path.join(self.parent_folder, "annotated_images")
-        if not os.path.exists(annotated_folder):
-            os.makedirs(annotated_folder)
-        annotated_path = os.path.join(annotated_folder, os.path.basename(self.image_path))
-        self.image_display.pixmap().save(annotated_path)
-        print(f"Annotated image saved at: {annotated_path}")
 
     def quit_program(self):
         QApplication.quit()
