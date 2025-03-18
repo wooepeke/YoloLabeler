@@ -1,7 +1,7 @@
 import cv2
 import json
 import os
-
+ 
 # Configuration
 OUTPUT_FOLDER = 'Datasets/Stag/labels'  # Folder where the JSON is saved --> Rename this 
 CLASS_LABEL = 0  # Default class label for annotations
